@@ -41,3 +41,62 @@ PC-A | NIC | 192.168.1.10 / 255.255.255.0
 Вводим команду `show version` чтобы посмотреть версию ОС Cisco IOS - 15.0 (2) SE4.
 
 Для изучения свойств по умолчанию интерфейса FastEthernet, который используется компьютером PC-A, используем `show int f0/6`. Интерфейс включен, имеет MAC-адресс 0060.2fda.7d06, заданные настройки: полнодуплексный способ связи и скорость 100 мб/с.
+
+Просматриваем флеш-память. Вводим `dir flash` и видим флеш-каталог содержит только файл образа системы с именем _2960-lanbasek9-mz.150-2.SE4.bin_
+
+2. **Настройка основных параметров устройства**
+
+Входим в режим глобальной конфигурации при помощи `conf t` и построчно вводим следующие команды:
+
+`no ip domain-lookup`
+
+`hostname S1`
+
+`service password-encryption`
+
+`enable secret class`
+
+`banner motd #`
+
+`Unauthorized access is strictly prohibited. #`
+
+  Теперь назначим IP-адрес интерфейсу SVI на коммутаторе, чтобы получить возможность удаленного управления коммутатором. Вводим последовательность команд:
+  
+`S1# configure terminal`
+
+`S1(config)# interface vlan1`
+
+`S1(config-if)# ip address 192.168.1.2 255.255.255.0`
+
+`S1(config-if)# no shutdown`
+
+`ctrl + z`
+
+Ограничиваем доступ через порт консоли при помощи пароля _cisco_, а также задаем параметр **logging synchronous**, чтобы консольные сообщения не прерывали выполнение команд:
+
+`S1# configure terminal`
+
+`S1(config)# line con 0`
+
+`S1(config-line)# password cisco`
+
+`S1(config-line)# login`
+
+`S1(config-line)# logging synchronous`
+
+`ctrl + z`
+
+Также настроим каналы виртуального соединения для удаленного управления (vty). Необходимо настроить пароль VTY, чтобы коммутатор разрешил доступ через Telnet.
+
+`S1# configure terminal`
+
+`S1(config)# line vty 0 15`
+
+`S1(config-line)# password cisco`
+
+`S1(config-line)# login`
+
+`ctrl + z`
+
+Команда `login` даёт возможность нам идентифицировать себя для системы.
+
