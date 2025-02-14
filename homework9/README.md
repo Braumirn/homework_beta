@@ -170,6 +170,36 @@ PC-B | NIC | DHCP | 255.255.255.0
 
 ![alt text](image-2.png)
 
-Командами `S..(config-if)# switchport mode access` ; `S..(config-if)# switchport access vlan 10` настроим интерфейсы в качестве портов доступа. На **S1** это будут интерфейсы *f0/5-6*, на **S2** - *f0/18*. После чего, н S1 и S2 переместите  VLAN 1 в VLAN 999 и отключите неиспользуемые порты.
-⦁	Убедитесь, что неиспользуемые порты отключены и связаны с VLAN 999, введя команду  show.
-S1# show interfaces status
+Командами `S..(config-if)# switchport mode access` ; `S..(config-if)# switchport access vlan 10` настроим интерфейсы в качестве портов доступа. На **S1** это будут интерфейсы *f0/5-6*, на **S2** - *f0/18*. После чего, на **S1** и **S2** переместим  *VLAN 1* в *VLAN 999* и отключим неиспользуемые порты. Убедимся, что неиспользуемые порты отключены и связаны с VLAN 999, введя команду  `show interfaces status`
+
+![alt text](image-3.png)
+
+![alt text](image-4.png)
+
+Займемся документированием и реализацией функций безопасности порта. На **S1**, введём команду `show port-security interface f0/6`  для отображения настроек по умолчанию безопасности порта для интерфейса **F0/6** и заполним таблицу
+
+Функция | Настройка по умолчанию
+--- | ---
+Защита портов |	Disabled
+Максимальное количество записей MAC-адресов	| 1
+Режим проверки на нарушение безопасности | Shutdown
+Aging Time | 0 mins	
+Aging Type | Absolute	
+Secure Static Address Aging | Disabled	
+Sticky MAC Address | 0	
+
+![alt text](image-5.png)
+
+Теперь включим защиту порта на **F0/6** со следующими настройками:
+ * Максимальное количество записей MAC-адресов: 3 - `switchport port-security maximum 3`
+ * Режим безопасности: restrict - `switchport port-security violation restrict`
+ * Aging time: 60 мин - `switchport port-security aging time 60`
+ * Aging type: неактивный - `switchport port-security aging type inactivity`
+
+Проверим настройки безопасности порта **f0/6** теперь (параметр *Aging type* в CPT не настроить, он остался без изменений)
+
+![alt text](image-7.png)
+
+
+
+
