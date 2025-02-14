@@ -152,7 +152,7 @@ PC-B | NIC | DHCP | 255.255.255.0
 
 ### 3. Настройки безопасности коммутатора
 
-Настроим все магистральные порты **Fa0/1** на обоих коммутаторах для использования **VLAN 333** в качестве *native VLAN*.
+Настроим все магистральные порты **f0/1** на обоих коммутаторах для использования **VLAN 333** в качестве *native VLAN*.
 
 `S1(config)# interface f0/1`
 
@@ -166,7 +166,7 @@ PC-B | NIC | DHCP | 255.255.255.0
 
 Такой же результат должен быть на S2.
 
-Отключим согласование DTP **F0/1** на **S1** и **S2** командой `S..(config-if)#switchport nonegotiate`  и проверим с помощью команды `show interfaces f0/1 switchport | include Negotiation`
+Отключим согласование DTP **f0/1** на **S1** и **S2** командой `S..(config-if)#switchport nonegotiate`  и проверим с помощью команды `show interfaces f0/1 switchport | include Negotiation`
 
 ![alt text](image-2.png)
 
@@ -176,7 +176,7 @@ PC-B | NIC | DHCP | 255.255.255.0
 
 ![alt text](image-4.png)
 
-Займемся документированием и реализацией функций безопасности порта. На **S1**, введём команду `show port-security interface f0/6`  для отображения настроек по умолчанию безопасности порта для интерфейса **F0/6** и заполним таблицу
+Займемся документированием и реализацией функций безопасности порта. На **S1**, введём команду `show port-security interface f0/6`  для отображения настроек по умолчанию безопасности порта для интерфейса **f0/6** и заполним таблицу
 
 Функция | Настройка по умолчанию
 --- | ---
@@ -190,7 +190,7 @@ Sticky MAC Address | 0
 
 ![alt text](image-5.png)
 
-Теперь включим защиту порта на **F0/6** со следующими настройками:
+Теперь включим защиту порта на **f0/6** со следующими настройками:
  * Максимальное количество записей MAC-адресов: 3 - `switchport port-security maximum 3`
  * Режим безопасности: restrict - `switchport port-security violation restrict`
  * Aging time: 60 мин - `switchport port-security aging time 60`
@@ -200,6 +200,34 @@ Sticky MAC Address | 0
 
 ![alt text](image-7.png)
 
+Включим безопасность порта для **f0/18** на **S2**. Настроим его таким образом, чтобы он автоматически добавлял адреса МАС, изученные на этом порту командой `switchport port-security mac-address sticky`, в текущую конфигурацию, и зададим следующие параметры:
+ * Максимальное количество записей MAC-адресов: 2
+ * Тип безопасности: Protect
+ * Aging time: 60 мин.
 
+ ![alt text](image-6.png)
+
+ Также на **S2** реализуем безопасность DCHP snooping. На **S2** включим DHCP snooping и настроим его во **VLAN 10**, настроим магистральные порты на **S2** как доверенные порты и ограничьте ненадежный порт **f0/18** на **S2** пятью DHCP-пакетами в секунду:
+
+`S2(config)# ip dhcp snooping`
+
+`S2(config)# ip dhcp snooping vlan 10`
+
+`S2(config)# interface f0/1`
+
+`S2(config-if)# ip dhcp snooping trust`
+
+`S2(config)# interface f0/18`
+
+`S2(config-if)# ip dhcp snooping limit rate 5`
+
+![alt text](image-8.png)
+
+Реализуем PortFast и BPDU Guard:
+ * Настройте PortFast на всех портах доступа, которые используются на обоих коммутаторах командой `spanning-tree portfast`
+ * Включите защиту BPDU на портах доступа VLAN 10 S1 и S2, подключенных к PC-A и PC-B при помощи `spanning-tree bpduguard enable`
+ * Убедитесь, что защита BPDU и PortFast включены на соответствующих портах, используя `show spanning-tree interface f0/6 detail`
+
+![alt text](image-9.png)
 
 
