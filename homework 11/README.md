@@ -86,19 +86,27 @@ VLAN | Имя | Назначенный интерфейс
 ![alt text](image-4.png)
 
 ##### Шаг 2. Настройка интерфейса R2 g0/0/1 с использованием адреса из таблицы и маршрута по умолчанию с адресом следующего перехода 10.20.0.1
-R2(config)# interface g0/0/1
-R2(config-if)# ip address 10.20.0.4 255.255.255.0
-R2(config-if)# no shutdown
-R2(config-if)# exit
-R2(config)# ip route 0.0.0.0 0.0.0.0 10.20.0.1
+`R2(config)# ip route 0.0.0.0 0.0.0.0 10.20.0.1`
 
-ip route 0.0.0.0 0.0.0.0 10.20.0.1
-interface g0/0/1
-ip address 10.20.0.4 255.255.255.0
-no shutdown
-exit
+`R2(config)# interface g0/0/1`
 
+`R2(config-if)# ip address 10.20.0.4 255.255.255.0`
 
+`R2(config-if)# no shutdown`
+#### Часть 5. Настройте удаленный доступ
+##### Шаг 1. Настройте все сетевые устройства для базовой поддержки SSH.
+ * Создайте локального пользователя с именем пользователя SSHadmin и зашифрованным паролем $cisco123! - `username SSHadmin secret $cisco123!`
+ * Используйте ccna-lab.com в качестве доменного имени - `ip domain name ccna-lab.com`
+ * Генерируйте криптоключи с помощью 1024 битного модуля - `crypto key generate rsa general-keys modulus 1024`
+ * Настройте первые пять линий VTY на каждом устройстве, чтобы поддерживать только SSH-соединения и с локальной аутентификацией:
 
+`line vty 0 4`
 
+`transport input ssh`
 
+`login local`
+##### Шаг 2. Включите защищенные веб-службы с проверкой подлинности на R1.
+ * Включите сервер HTTPS на R1.
+`R1(config)# ip http secure-server` 
+ * Настройте R1 для проверки подлинности пользователей, пытающихся подключиться к веб-серверу.
+`R1(config)# ip http authentication local`
